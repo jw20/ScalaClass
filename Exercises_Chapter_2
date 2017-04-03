@@ -1,0 +1,174 @@
+
+//////////////////////////////////////////////////////////////////////
+//2.1.4.1
+//////////////////////////////////////////////////////////////////////
+
+//Type is Int and Value is 3.
+//Type is Int and Value is 3.
+//Type is Int but trying to evaluate the value throws an error.
+
+
+//////////////////////////////////////////////////////////////////////
+//2.2.5.1
+//////////////////////////////////////////////////////////////////////
+
+//"foo" take 1
+//1.+(2).+(3)
+
+//////////////////////////////////////////////////////////////////////
+//2.2.5.2
+//////////////////////////////////////////////////////////////////////
+
+//1+2+3 is an expression which has a Type of Integer and evaluates to a value of 6.
+//6 is a literal expression which has a Type of Integer and evaluates to a value of 6.
+
+//////////////////////////////////////////////////////////////////////
+//2.3.8.1
+//////////////////////////////////////////////////////////////////////
+
+//Type is Int and Value is 42
+//Type is Boolean and Value is true
+//Type is Long and Value is 123
+//Type is Double and Value is 42.0
+
+//////////////////////////////////////////////////////////////////////
+//2.3.8.2
+//////////////////////////////////////////////////////////////////////
+
+//a is a literal expression which has a Type of Char and evaluates to a value of a (represented in one way in memory)
+//a is a literal expression which has a Type of String and evaluates to a value of a (represented in a different way in memory)
+
+//////////////////////////////////////////////////////////////////////
+//2.3.8.3
+//////////////////////////////////////////////////////////////////////
+
+//Hello World! is a literal expression which has a Type of String and evaluates to a value of Hello World!
+//println(Hello World!) is an expression which has a Type of Unit and evaluate to no interesting value.
+
+//////////////////////////////////////////////////////////////////////
+//2.3.8.4
+//////////////////////////////////////////////////////////////////////
+
+//Hello World is not syntactically correct and will not compile so it has no Type/Value. A character can only consist of one character and thus the compiler expects to see another single quote after the first character after the initial single quote.
+
+object HelloWorld {
+  def main(args: Array[String]): Unit = {
+    println("Hello world!")
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
+//2.4.5.1
+//////////////////////////////////////////////////////////////////////
+
+object cat1 {
+  val name = "Oswald"
+  val color = "Black"
+  val food = "Milk"
+}
+
+object cat2 {
+  val name = "Henderson"
+  val color = "Ginger"
+  val food = "hips"
+}
+
+object cat3 {
+  val name = "Quentin"
+  val color = "Tabby and White"
+  val food = "Curry"
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//2.4.5.2
+//////////////////////////////////////////////////////////////////////
+
+
+object calc {
+  def square(input:Double):Double = {
+    input * input
+  }
+
+  def cube(input:Double):Double = {
+    input * square(input)
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
+//2.4.5.3
+//////////////////////////////////////////////////////////////////////
+
+//Read the explanation
+
+//////////////////////////////////////////////////////////////////////
+//2.4.5.4
+//////////////////////////////////////////////////////////////////////
+
+//Calling argh.c will first initialize argh, which means it will evaluate all of its vals, which means it will evalulate b, which requires evaluating a.
+//a will evaluate to 1 and then b will evaluate to 3.   Then, we finally get to calling c, which will re-evaluate a, but not use it, and then use b as-is (ie 3) and then add it to c
+//which will implicitly convert 3 to a string first (which I found out by doing a test) and thus yield 3c.
+// Then, it will call b, which will use b as-is (ie 3) and convert that to a string, yield 3c3 so far.
+// Then, it will call a, which will yield 1, and thus you end up with a string of 3c31.
+
+//////////////////////////////////////////////////////////////////////
+//2.4.5.5
+//////////////////////////////////////////////////////////////////////
+
+object person {
+  val firstName= "John"
+  val lastName = "Smith"
+}
+
+object alien {
+  val p = person
+  def greet(p: person.type): String = "Hello " + p.firstName
+}
+
+object testMe2 extends Script {
+  val greeting = alien.greet(person)
+}
+
+//Type of Greet is String. No - other methods will have a different type.
+
+
+//////////////////////////////////////////////////////////////////////
+//2.4.5.6
+//////////////////////////////////////////////////////////////////////
+
+//Are methods values?  Im not positive but I dont think so.  Values are objects.  Methods are what we use to interact with objects.
+//Are methods expressions?  I dont think so  expressions have Types but Methods do not.
+
+//////////////////////////////////////////////////////////////////////
+//2.6.4.1
+//////////////////////////////////////////////////////////////////////
+
+//Type is String and Value is Predator
+
+//////////////////////////////////////////////////////////////////////
+//2.6.4.2
+//////////////////////////////////////////////////////////////////////
+
+//Hmmmwithout typing it into IntelliJ and looking, I would guess that the Type is Unit (or whatever the common parent of String and Integare is) and Value is 2001.  Ahh  its Any not Unit.
+
+//////////////////////////////////////////////////////////////////////
+//2.6.4.3
+//////////////////////////////////////////////////////////////////////
+
+//HmmmI guess the Type would be Any again and the Value would be Nothing?  Im not sure.  After examining it in IntelliJ, I see the Type is Any and the Value is ().
+// Im confused by that  I thought () was the value of something of Type Unit.
+
+
+
+
+object backToSquares {
+  def square(in: Double): Double = {in*in}
+}
+
+object testMe3 extends  DefaultSimulation{
+  val y = if(false) "hello"
+  assert(backToSquares.square(2)==4)
+  val k = 1
+}
+
+
