@@ -1,0 +1,301 @@
+
+//3.1.6.1
+class cat(val name: String, val color: String, val food:String){
+}
+
+object testMe4 extends Script{
+  val cat1 = new cat("Oswald","Black","Milk")
+  val cat2 = new cat("Henderson","Ginger","Chips")
+  val cat3 = new cat("Quentin","Tabby and White","Curry")
+}
+
+//3.1.6.2
+object chipShop{
+  def willServe(c: cat): Boolean = if(c.food=="Chips") true else false
+}
+
+object testMe5 extends Script{
+  val cat1 = new cat("Oswald","Black","Milk")
+  val cat1Res = chipShop.willServe(cat1)
+  val cat2 = new cat("Henderson","Ginger","Chips")
+  val cat2Res = chipShop.willServe(cat2)
+}
+
+//3.1.6.3
+class Director(val firstName:String, val lastName:String, val yearOfBirth: Int) {
+  def name: String = firstName + ' ' + lastName
+}
+
+class Film(val name:String, val yearOfRelease:Int,val imdbRating: Double, val director: Director) {
+  def directorsAge: Int = yearOfRelease - director.yearOfBirth
+  def isDirectedBy(d: Director): Boolean = if(director.name==d.name) true else false
+  def copy(name:String=name, yearOfRelease:Int=yearOfRelease,imdbRating: Double=imdbRating, director: Director=director): Film = {
+    new Film(name,yearOfRelease,imdbRating,director)
+  }
+}
+
+object testMe6 extends  Script {
+  val eastwood = new Director("Clint", "Eastwood", 1930)
+  val mcTiernan = new Director("John", "McTiernan", 1951)
+  val nolan = new Director("Christopher", "Nolan", 1970)
+  val someBody = new Director("Just", "Some Body", 1990)
+  val memento = new Film("Memento", 2000, 8.5, nolan)
+  val darkKnight = new Film("Dark Knight", 2008, 9.0, nolan)
+  val inception = new Film("Inception", 2010, 8.8, nolan)
+  val highPlainsDrifter = new Film("High Plains Drifter", 1973, 7.7, eastwood)
+  val outlawJoseyWales = new Film("The Outlaw Josey Wales", 1976, 7.9, eastwood)
+  val unforgiven = new Film("Unforgiven", 1992, 8.3, eastwood)
+  val granTorino = new Film("Gran Torino", 2008, 8.2, eastwood)
+  val invictus = new Film("Invictus", 2009, 7.4, eastwood)
+  val predator = new Film("Predator", 1987, 7.9, mcTiernan)
+  val dieHard = new Film("Die Hard", 1988, 8.3, mcTiernan)
+  val huntForRedOctober = new Film("The Hunt for Red October", 1990, 7.6, mcTiernan)
+  val thomasCrownAffair = new Film("The Thomas Crown Affair", 1999, 6.8, mcTiernan)
+  val a = eastwood.yearOfBirth // should be 1930
+  val b = dieHard.director.name // should be "John McTiernan"
+  val c = invictus.isDirectedBy(nolan) // should be false
+
+  val d = highPlainsDrifter.copy(name = "L'homme des hautes plaines")  // returns Film("L'homme des hautes plaines", 1973, 7.7, /* etc */)
+  val e = thomasCrownAffair.copy(yearOfRelease = 1968, director = new Director("Norman", "Jewison", 1926))  // returns Film("The Thomas Crown Affair", 1926, /* etc */)
+  val f = inception.copy().copy().copy() // returns a new copy of `inception`
+
+  //NOTE: I believe there is a bug in the answer for val e above - the release year should be 1968, not 1926.
+  //NOTE: I see what you did there on inception - nice :)
+}
+
+
+//3.1.6.4
+class Counter(val value:Int) {
+  def inc(): Counter = new Counter(value + 1)
+  def dec(): Counter = new Counter(value - 1)
+}
+
+object testMe7 extends  Script {
+  val z = new Counter(10).inc.dec.inc.inc.value
+}
+
+//3.1.6.5
+class Counter2(val value:Int) {
+  def inc(amt:Int=1): Counter2 = new Counter2(value + amt)
+  def dec(amt:Int=1): Counter2 = new Counter2(value - amt)
+}
+
+object testMe8 extends  Script {
+  val z = new Counter2(10).inc(1).dec().inc().inc().value
+  val y = new Counter2(10).inc(2).dec(3).inc().inc().value
+}
+
+//3.1.6.6
+class Adder(amount: Int) {
+  def add(in: Int): Int = in + amount
+}
+
+class Counter3(val value:Int) {
+  def inc(amt:Int=1): Counter3 = new Counter3(value + amt)
+  def dec(amt:Int=1): Counter3 = new Counter3(value - amt)
+  def adjust(a: Adder): Counter3 = new Counter3(a.add(value))
+}
+
+object testMe9 extends  Script {
+  val z = new Counter3(10).adjust(new Adder(5)).value
+  val k = 1
+}
+
+//3.2.3.1
+//I'm afraid I don't have a good answer for this one.
+//Though I'm following the usage of function application,
+//I don't believe I yet have sufficient understanding how
+//how/when it can be used in a really powerful way.
+
+
+//3.3.2.1
+class PersonA(val firstName: String, val lastName: String, val yearOfBirth: Int) {
+  def name: String = firstName + ' ' + lastName
+}
+
+object PersonA {
+  def apply(wholeName: String, yearOfBirth: Int): PersonA = {
+    val fn = wholeName.split(" ")(0)
+    val ln = wholeName.split(" ")(1)
+    new PersonA(fn,ln,yearOfBirth)
+  }
+
+  def apply(wholeName: String): PersonA = {
+    PersonA(wholeName,1990)
+  }
+}
+
+object testMe10 extends  Script{
+  val p = new PersonA("John","Smith",1999).name
+  val q = PersonA("John Smith",1999).name
+  val q2 = PersonA("John Smith").name
+}
+
+
+//3.3.2.2
+class Director2(val firstName:String, val lastName:String, val yearOfBirth: Int) {
+  def name: String = firstName + ' ' + lastName
+}
+
+object Director2{
+  def apply(firstName:String, lastName:String, yearOfBirth: Int): Director2= {
+    new Director2(firstName,lastName,yearOfBirth)
+  }
+  def older(d1: Director2, d2: Director2): Director2 = {
+    if(d1.yearOfBirth<=d2.yearOfBirth) d1 else d2
+  }
+}
+
+class Film2(val name:String, val yearOfRelease:Int,val imdbRating: Double, val director: Director2) {
+  def directorsAge: Int = yearOfRelease - director.yearOfBirth
+
+  def isDirectedBy(d: Director2): Boolean = if (director.name == d.name) true else false
+
+  def copy(name: String = name, yearOfRelease: Int = yearOfRelease, imdbRating: Double = imdbRating, director: Director2 = director): Film2 = {
+    new Film2(name, yearOfRelease, imdbRating, director)
+  }
+}
+
+object Film2{
+  def apply(name:String, yearOfRelease:Int, imdbRating: Double, director: Director2): Film2= {
+    new Film2(name,yearOfRelease,imdbRating,director)
+  }
+  def highestRating(f1: Film2, f2: Film2): Double = {
+    math.max(f1.imdbRating,f2.imdbRating)
+  }
+  def oldestDiretorAtTheTime(f1: Film2, f2: Film2): Director2 = {
+    if(f1.directorsAge >= f2.directorsAge) f1.director else f2.director
+  }
+}
+
+object testMe11 extends  Script{
+  val d1 = Director2("John","Smith",1999)
+  val d2 = Director2("Ray","Charles",2000)
+  val k1 = Director2.older(d1, d2).name
+
+  val f1 = Film2("FilmOne",2005,100,d1)
+  val f2 = Film2("FilmTwo",2010,0,d2)
+  val k2 = Film2.highestRating(f1,f2)
+  val k3 = Film2.oldestDiretorAtTheTime(f1,f2).name
+
+}
+
+//3.3.2.3
+//I'm not sure I understand this question but I'll take a stab at it:
+/*
+Value
+Type
+Value
+Type
+Type
+*/
+
+//3.4.5.1
+case class Cat5(val name: String, val color: String, val food:String){
+}
+
+object testMe12 extends Script {
+  val c1 = Cat5("Fluffy","Black","Catnip")
+}
+
+//////////////////////////////////////////////////////////////////////
+//3.4.5.2
+//////////////////////////////////////////////////////////////////////
+case class Director3(val firstName:String, val lastName:String, val yearOfBirth: Int) {
+  def name: String = firstName + ' ' + lastName
+
+  def older(d1: Director3, d2: Director3): Director3 = {
+    if(d1.yearOfBirth<=d2.yearOfBirth) d1 else d2
+  }
+
+}
+
+case class Film3(val name:String, val yearOfRelease:Int,val imdbRating: Double, val director: Director3) {
+ def directorsAge: Int = yearOfRelease - director.yearOfBirth
+
+  def isDirectedBy(d: Director3): Boolean = if (director.name == d.name) true else false
+
+  def copy(name: String = name, yearOfRelease: Int = yearOfRelease, imdbRating: Double = imdbRating, director: Director3 = director): Film3 = {
+    new Film3(name, yearOfRelease, imdbRating, director)
+  }
+
+  def highestRating(f1: Film3, f2: Film3): Double = {
+    math.max(f1.imdbRating,f2.imdbRating)
+  }
+  def oldestDiretorAtTheTime(f1: Film3, f2: Film3): Director3 = {
+    if(f1.directorsAge >= f2.directorsAge) f1.director else f2.director
+  }
+
+}
+
+//////////////////////////////////////////////////////////////////////
+//3.4.5.3
+//////////////////////////////////////////////////////////////////////
+case class Counter4(val count:Int=0) {
+  def inc(amt:Int=1): Counter4 = this.copy(count+amt)
+  def dec(amt:Int=1): Counter4= this.copy(count - amt)
+  def adjust(a: Adder): Counter4 = this.copy(a.add(count))
+}
+
+object testMe13 extends  Script {
+  val z = Counter4().inc(1).adjust(new Adder(5)).count
+}
+
+//////////////////////////////////////////////////////////////////////
+//3.5.3.1
+//////////////////////////////////////////////////////////////////////
+case class Cat4(val name: String, val food:String){
+}
+
+object chipShop4{
+  def willServe(c: Cat4): Boolean = {
+    c match {
+      case Cat4(_,"Chips") => true
+      case _ => false
+    }
+  }
+}
+
+object TestMe14 extends Script{
+  val c1 = Cat4("Fluffy","Curry")
+  val c2 = Cat4("Charlie","Chips")
+  val k1 = chipShop4.willServe(c1)
+  val k2 = chipShop4.willServe(c2)
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//3.5.3.2
+//////////////////////////////////////////////////////////////////////
+case class Director4(val firstName:String, val lastName:String) {
+  def name: String = firstName + ' ' + lastName
+
+}
+
+case class Film4(val name:String, val director: Director4) {
+  def isDirectedBy(d: Director4): Boolean = if (director.name == d.name) true else false
+}
+
+object Dad {
+  def rate(film: Film4): Double = {
+    film match {
+      case Film4(_,Director4("Clint","Eastwood")) => 10
+      case Film4(_,Director4("John","McTiernan")) => 7
+      case _ => 0
+    }
+  }
+}
+
+object TestMe15 extends  Script{
+  val d1 = Director4("Clint","Eastwood")
+  val d2 = Director4("John","McTiernan")
+  val d3 = Director4("Tom","Smith")
+  val f1 = Film4("MovieOne",d1)
+  val f2 = Film4("MovieOne",d2)
+  val f3 = Film4("MovieOne",d3)
+  val r1 = Dad.rate(f1)
+  val r2 = Dad.rate(f2)
+  val r3 = Dad.rate(f3)
+}
+
+ 
