@@ -1,0 +1,400 @@
+
+import java.util.Date
+
+
+trait Visitor {
+  def id: String // Unique id assigned to each user
+  def createdAt: Date // Date this user first visited the site
+  // How long has this visitor been around?
+  def age: Long = new Date().getTime - createdAt.getTime
+}
+
+case class Anonymous(id: String, createdAt: Date = new Date()) extends Visitor
+case class User(id: String, email: String, createdAt: Date) extends Visitor
+
+object Runner {
+  def older(v1: Visitor, v2: Visitor): Boolean = v1.createdAt.before(v2.createdAt)
+}
+
+object TestMe1 extends Script {
+  val k = Runner.older(User("1","user@x.com",new Date()), Anonymous("2"))
+}
+
+////////////////////////////////////////////////////////
+//4.1.4.1
+////////////////////////////////////////////////////////
+
+trait Feline {
+  def color: String
+  def sound:String
+}
+
+case class Cat (color: String, sound: String = "Meow", food: String) extends Feline
+case class Tiger (color: String, sound: String = "Roar") extends Feline
+case class Lion (color: String, sound: String = "Roar", maneSize: Int) extends Feline
+case class Panther (color: String, sound: String = "Roar") extends Feline
+
+object TestMe2 extends Script {
+  val c = Cat("Red", food ="Chow")
+  val t = Tiger("Red")
+  val l = Lion("Red", maneSize =1)
+  val p = Panther("Red")
+}
+
+//After reading the solution, I see I shouldn't have included sound in the constructor since
+//that enables the user to change it which doesn't make sense. Got it.
+
+////////////////////////////////////////////////////////
+//4.1.4.2
+////////////////////////////////////////////////////////
+
+trait Shape {
+  def sides: Int
+  def perimeter: Double
+  def area: Double
+}
+
+case class Circle(radius: Double) extends Shape {
+  val sides = 1
+  val perimeter = 2 * math.Pi * radius
+  val area = math.Pi * math.pow(radius, 2)
+}
+
+case class Rectangle(length: Double, width: Double) extends Shape {
+  val sides = 4
+  val perimeter = length*2 + width*2
+  val area = length * width
+}
+
+case class Square(width: Double) extends Shape {
+  val sides = 4
+  val perimeter = width * 4
+  val area = width * width
+}
+
+object TestMe3 extends Script{
+  val c = Circle(3)
+  val r = Rectangle(2,3)
+  val s = Square(4)
+}
+
+
+////////////////////////////////////////////////////////
+//4.1.4.3
+////////////////////////////////////////////////////////
+
+trait Shape2 {
+  def sides: Int
+  def perimeter: Double
+  def area: Double
+}
+
+trait Rectangular extends Shape2 {
+  def sides: Int = 4
+  def length: Double
+  def width: Double
+  def perimeter: Double = 2*length + 2*width
+  def area: Double = length * width
+}
+
+case class Circle2(radius: Int) extends Shape2 {
+  val sides = 1
+  val perimeter = 2 * math.Pi * radius
+  val area = math.Pi * math.pow(radius, 2)
+}
+
+case class Rectangle2(length: Double, width: Double) extends Rectangular {
+}
+
+case class Square2(width: Double) extends Rectangular {
+  val length: Double = width
+}
+
+object TestMe4 extends Script{
+  val c = Circle2(3)
+  val r = Rectangle2(2,3)
+  val r1 = r.perimeter
+  val r2 = r.area
+  val s = Square2(4)
+  val s1 = s.perimeter
+  val s2 = s.area
+}
+
+////////////////////////////////////////////////////////
+//4.2.2.1
+////////////////////////////////////////////////////////
+
+sealed trait Shape3 {
+  def sides: Int
+  def perimeter: Double
+  def area: Double
+}
+
+sealed trait Rectangular3 extends Shape3 {
+  def sides: Int = 4
+  def length: Double
+  def width: Double
+  def perimeter: Double = 2*length + 2*width
+  def area: Double = length * width
+}
+
+final case class Circle3(radius: Int) extends Shape3 {
+  val sides = 1
+  val perimeter = 2 * math.Pi * radius
+  val area = math.Pi * math.pow(radius, 2)
+}
+
+final case class Rectangle3(length: Double, width: Double) extends Rectangular3 {
+}
+
+final case class Square3(width: Double) extends Rectangular3 {
+  val length: Double = width
+}
+
+object Draw {
+  def apply(myShape: Shape3): String = {
+    myShape match {
+      case Circle3(r) => "A circle of radius " + r
+      case Rectangle3(l,w) => "A rectangle of length " + l + " and width of " + w
+      case Square3(w) => "A square of width " + w
+    }
+  }
+}
+
+object TestMe5 extends Script {
+  val c = Draw(Circle3(5))
+  val r = Draw(Rectangle3(5,2))
+  val s = Draw(Square3(5))
+}
+
+////////////////////////////////////////////////////////
+//4.2.2.2
+////////////////////////////////////////////////////////
+
+sealed trait Color4 {
+  def r: Int
+  def g: Int
+  def b: Int
+  def name: String
+  def shade: String
+}
+
+object Red extends Color4 {
+  val r = 100
+  val g = 200
+  val b = 300
+  val shade = "Dark"
+  val name = "Red"
+}
+
+object Pink extends Color4 {
+  val r = 50
+  val g = 200
+  val b = 300
+  val shade = "Light"
+  val name = "Pink"
+}
+
+object Yellow extends Color4 {
+  val r = 50
+  val g = 200
+  val b = 200
+  val shade = "Light"
+  val name = "Yellow"
+}
+
+sealed trait Shape4 {
+  def sides: Int
+  def perimeter: Double
+  def area: Double
+  def color: Color4
+}
+
+sealed trait Rectangular4 extends Shape4 {
+  def sides: Int = 4
+  def length: Double
+  def width: Double
+  def perimeter: Double = 2*length + 2*width
+  def area: Double = length * width
+}
+
+final case class Circle4(radius: Int, color: Color4) extends Shape4 {
+  val sides = 1
+  val perimeter = 2 * math.Pi * radius
+  val area = math.Pi * math.pow(radius, 2)
+}
+
+final case class Rectangle4(length: Double, width: Double, color:Color4) extends Rectangular4 {
+}
+
+final case class Square4(width: Double, color:Color4) extends Rectangular4 {
+  val length: Double = width
+}
+
+object Draw4 {
+  def apply(myShape: Shape4): String = {
+    myShape match {
+      case Circle4(r,c) => "A " + c.shade + c.name + " circle of radius " + r
+      case Rectangle4(l,w,c) => "A " + c.shade + c.name + " rectangle of length " + l + " and width of " + w
+      case Square4(w,c) => "A " + c.shade + c.name + " square of width " + w
+    }
+  }
+}
+
+object TestMe6 extends Script {
+  val c = Draw4(Circle4(5,Red))
+  val r = Draw4(Rectangle4(5,2,Pink))
+
+  object Blue extends Color4 {
+    val r = 50
+    val g = 50
+    val b = 300
+    val shade = "Dark"
+    val name = "Blue"
+  }
+
+  val s = Draw4(Square4(5,Blue))
+
+}
+
+////////////////////////////////////////////////////////
+//4.2.2.3
+////////////////////////////////////////////////////////
+
+sealed trait DivisionResult {}
+
+final case class Finite(res: Double) extends DivisionResult{}
+
+final object Infinite extends DivisionResult{}
+
+object Divide {
+  def apply(val1: Int, val2: Int): DivisionResult ={
+    if(val2==0) Infinite else Finite(val1/val2)
+  }
+}
+
+object TestDivide {
+  def apply(val1: Int, val2: Int):String ={
+    val res = Divide(val1,val2)
+    res match {
+      case Infinite => "Division by 0 Encountered"
+      case Finite(r) => "Normal Division Encountered. Result: " + r
+    }
+  }
+}
+
+object TestMe7 extends Script {
+  val k1 = TestDivide(1,0)
+  val k2 = TestDivide(10,4)
+}
+
+////////////////////////////////////////////////////////
+//4.4.4.1
+////////////////////////////////////////////////////////
+
+sealed trait TrafficLight
+final case class Red() extends TrafficLight
+final case class Yellow() extends TrafficLight
+final case class Green() extends TrafficLight
+
+////////////////////////////////////////////////////////
+//4.4.4.2
+////////////////////////////////////////////////////////
+
+sealed trait Calc
+final case class Success(value: Double) extends Calc
+final case class Failure(value: String) extends Calc
+
+object DoCalc {
+    def apply(denom: Int): Calc= {
+      if(denom==0) Failure("Didn't Work") else Success(3/denom)
+      }
+}
+
+object TestMe8 extends  Script {
+  val k = DoCalc(1)
+  val x = DoCalc(0)
+  val y = 1
+
+}
+
+////////////////////////////////////////////////////////
+//4.4.4.3
+////////////////////////////////////////////////////////
+
+sealed trait Source
+final case class Well() extends Source
+final case class Spring() extends Source
+final case class Tap() extends Source
+
+sealed trait BottledWater {
+  def size: Int
+  def soure: Source
+  def carbonated: Boolean
+}
+
+////////////////////////////////////////////////////////
+//4.5.6.1
+////////////////////////////////////////////////////////
+
+sealed trait TrafficLight2 {
+ def next: TrafficLight2
+}
+final case class Red2() extends TrafficLight2{def next: TrafficLight2 = Green2()}
+final case class Yellow2() extends TrafficLight2{def next: TrafficLight2 = Red2()}
+final case class Green2() extends TrafficLight2{def next: TrafficLight2 = Yellow2()}
+
+object TestMe9 extends Script{
+  val z = Red2().next
+  val y = Green2().next
+}
+
+////////////////////////////////////////////////////////
+
+sealed trait TrafficLight3 {
+  def next: TrafficLight3 =
+  this match {
+    case Green3()=>Yellow3()
+    case Yellow3()=>Red3()
+    case Red3()=>Green3()
+  }
+}
+final case class Red3() extends TrafficLight3
+final case class Yellow3() extends TrafficLight3
+final case class Green3() extends TrafficLight3
+
+object TestMe10 extends Script {
+  val z = Red3().next
+  val y = Green3().next
+
+}
+
+////////////////////////////////////////////////////////
+//4.5.6.2
+////////////////////////////////////////////////////////
+
+//I'm getting lost here - don't know how to answer this question.
+
+sealed trait Calculation2
+final case class Success2(result: Int) extends Calculation2
+final case class Failure2(reason: String) extends Calculation2
+
+object Calculator {
+  def +(c: Calculation2, i: Int): Calculation2 = {
+    Success2(c)
+}
+  def -(c: Calculation2, i: Int): Calculation2 = {
+    Success2(i)
+  }
+
+}
+
+object TestMe11 extends Script {
+  val z = Success2(44)//.result
+  assert(Calculator.+(Success2(33), 1) == Success2(2))
+  assert(Calculator.-(Success2(1), 1) == Success2(0))
+  assert(Calculator.+(Failure2("Badness"), 1) == Failure2("Badness"))
+}
+
+
+
