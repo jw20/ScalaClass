@@ -1,7 +1,4 @@
 
-import java.util.Date
-
-
 trait Visitor {
   def id: String // Unique id assigned to each user
   def createdAt: Date // Date this user first visited the site
@@ -338,7 +335,7 @@ sealed trait BottledWater {
 ////////////////////////////////////////////////////////
 
 sealed trait TrafficLight2 {
- def next: TrafficLight2
+  def next: TrafficLight2
 }
 final case class Red2() extends TrafficLight2{def next: TrafficLight2 = Green2()}
 final case class Yellow2() extends TrafficLight2{def next: TrafficLight2 = Red2()}
@@ -366,35 +363,378 @@ final case class Green3() extends TrafficLight3
 object TestMe10 extends Script {
   val z = Red3().next
   val y = Green3().next
+}
+  ////////////////////////////////////////////////////////
 
+  sealed trait TrafficLight4
+  final case class Red4() extends TrafficLight4
+  final case class Yellow4() extends TrafficLight4
+  final case class Green4() extends TrafficLight4
+
+  object Next {
+    def apply(curr: TrafficLight4): TrafficLight4 = {
+      curr match {
+        case Green4() => Yellow4()
+        case Yellow4() => Red4()
+        case Red4() => Green4()
+      }
+    }
+  }
+
+  object TestMe11 extends Script {
+    val z = Next(Red4())
+    val y = Next(Green4())
 }
 
 ////////////////////////////////////////////////////////
 //4.5.6.2
 ////////////////////////////////////////////////////////
 
-//I'm getting lost here - don't know how to answer this question.
-
 sealed trait Calculation2
 final case class Success2(result: Int) extends Calculation2
 final case class Failure2(reason: String) extends Calculation2
 
-object Calculator {
+object Calculator2 {
   def +(c: Calculation2, i: Int): Calculation2 = {
-    Success2(c)
+    c match {
+      case Success2(x) => Success2(x + i)
+      case Failure2(x) => c
+    }
 }
   def -(c: Calculation2, i: Int): Calculation2 = {
-    Success2(i)
+    c match {
+      case Success2(x) => Success2(x - i)
+      case Failure2(x) => c
+    }
+  }
+
+  def /(c: Calculation2, i: Int): Calculation2 = {
+    c match {
+      case Success2(x) => if(i==0) Failure2("Division by zero") else Success2(x / i)
+      case Failure2(x) => c
+    }
   }
 
 }
 
-object TestMe11 extends Script {
-  val z = Success2(44)//.result
-  assert(Calculator.+(Success2(33), 1) == Success2(2))
-  assert(Calculator.-(Success2(1), 1) == Success2(0))
-  assert(Calculator.+(Failure2("Badness"), 1) == Failure2("Badness"))
+object TestMe12 extends Script {
+  assert(Calculator2.+(Success2(1), 1) == Success2(2))
+  assert(Calculator2.-(Success2(1), 1) == Success2(0))
+  assert(Calculator2.+(Failure2("Badness"), 1) == Failure2("Badness"))
+
+  assert(Calculator2./(Success2(4), 2) == Success2(2))
+  assert(Calculator2./(Success2(4), 0) == Failure2("Division by zero"))
+  assert(Calculator2./(Failure2("Badness"), 0) == Failure2("Badness"))
+}
+
+////////////////////////////////////////////////////////
+//4.5.6.3
+////////////////////////////////////////////////////////
+
+//Pattern matching in an EmailService Object b/c it will require a lot of external code
+//to handle the email that doesn't belong in Visitor objects themsevles.
+
+////////////////////////////////////////////////////////
+//4.6.3.1 - Just replicate example from book
+////////////////////////////////////////////////////////
+
+sealed trait IntList
+final case class Pair(head: Int, tail: IntList) extends IntList
+final case object End extends IntList
+
+object sum {
+  def apply(list: IntList): Int =
+    list match {
+      case End => 0
+      case Pair(hd, tl) => hd + sum(tl)
+    }
+}
+
+object TestMe13 extends Script {
+  val example = Pair(1, Pair(2, Pair(3, End)))
+  assert(sum(example) == 6)
+  assert(sum(example.tail) == 5)
+  assert(sum(End) == 0)
+}
+
+////////////////////////////////////////////////////////
+//4.6.3.1 - Actual exercise
+////////////////////////////////////////////////////////
+
+
+sealed trait IntListX {
+  def length: Int = {
+    this match {
+      case EndX => 0
+      case PairX(h, t) => 1 + t.length
+    }
+  }
+  def product: Int = {
+    this match {
+      case EndX => 1
+      case PairX(h, t) => h * t.product
+    }
+  }
+  def double: IntListX = {
+    this match {
+      case EndX => this
+      case PairX(h, t) => PairX(h*2, t.double)
+    }
+  }
+}
+final case class PairX(head: Int, tail: IntListX) extends IntListX
+final case object EndX extends IntListX
+
+
+object TestMe14 extends Script {
+  val example = PairX(1, PairX(2, PairX(3, EndX)))
+  assert(example.length == 3)
+  assert(example.tail.length == 2)
+  assert(EndX.length == 0)
+
+  assert(example.product == 6)
+  assert(example.tail.product == 6)
+  assert(EndX.product == 1)
+
+  val z = example.double
+
+  assert(example.double == PairX(2, PairX(4, PairX(6, EndX))))
+  assert(example.tail.double == PairX(4, PairX(6, EndX)))
+  assert(EndX.double == EndX)
 }
 
 
+////////////////////////////////////////////////////////
+//4.6.3.2 - Actual exercise
+////////////////////////////////////////////////////////
 
+sealed trait Tree {
+  def sum: Int = {
+    this match {
+      case Leaf(value) => value
+      case Node(l,r) => l.sum + r.sum
+    }
+  }
+  def double: Tree = {
+    this match {
+      case Leaf(value) => Leaf(value * 2)
+      case Node(l,r) => Node(l.double, r.double)
+    }
+  }
+}
+final case class Node(left: Tree, right: Tree) extends Tree
+final case class Leaf(value: Int) extends Tree
+
+object TestMe15 extends Script{
+  val leaf1 = Leaf(10)
+  val leaf2 = Leaf(20)
+  val leaf3 = Leaf(30)
+  val node2 = Node(leaf2, leaf3)
+  val node1 = Node(leaf1, node2)
+
+  assert(node1.sum == 60)
+  assert(node1.double.sum == 120)
+}
+
+////////////////////////////////////////////////////////
+
+sealed trait Tree2 {
+  def sum: Int
+  def double: Tree2
+}
+final case class Node2(left: Tree2, right: Tree2) extends Tree2 {
+  def sum: Int = {
+    left.sum + right.sum
+  }
+  def double: Tree2 = {
+      Node2(left.double, right.double)
+  }
+}
+final case class Leaf2(value: Int) extends Tree2 {
+  def sum: Int = {
+    value
+  }
+  def double: Tree2 = {
+      Leaf2(value * 2)
+    }
+}
+
+object TestMe16 extends Script{
+  val leaf1 = Leaf2(10)
+  val leaf2 = Leaf2(20)
+  val leaf3 = Leaf2(30)
+  val node2 = Node2(leaf2, leaf3)
+  val node1 = Node2(leaf1, node2)
+
+  assert(node1.sum == 60)
+  assert(node1.double.sum == 120)
+}
+
+////////////////////////////////////////////////////////
+//4.7.0.3 - Extended exercises - Calc
+////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////
+//NOTE:
+//I was not able to come up with this solution - filled in from the answer key.
+//Though I feel like i understand all the pieces (ie traits, pattern matching, structural recursion, etc...),
+//I have trouble combining them all into bigger pieces of code like this.
+////////////////////////////////////////////////////////
+
+
+sealed trait Result
+final case class Succeed(value: Double) extends Result
+final case class Fail(err: String) extends Result
+
+sealed trait Expression {
+  def eval: Result = {
+    this match {
+      case Addition(left, right) => {
+        left.eval match {
+          case Fail(reason) => Fail(reason)
+          case Succeed(leftVal) => {
+            right.eval match {
+              case Fail(reason) => Fail(reason)
+              case Succeed(rightVal) => {
+                Succeed(leftVal+rightVal)
+              }
+            }
+          }
+        }
+      }
+      case Subtraction(left, right) => {
+        left.eval match {
+          case Fail(reason)=>Fail(reason)
+          case Succeed(valOne) => {
+            right.eval match {
+              case Fail(reason) => Fail(reason)
+              case Succeed(valTwo) => {
+                Succeed(valOne - valTwo)
+              }
+            }
+          }
+        }
+      }
+      case Division(l, r) =>
+        l.eval match {
+          case Fail(reason) => Fail(reason)
+          case Succeed(r1) =>
+            r.eval match {
+              case Fail(reason) => Fail(reason)
+              case Succeed(r2) =>
+                if(r2 == 0)
+                  Fail("Division by zero")
+                else
+                  Succeed(r1 / r2)
+            }
+        }
+      case SquareRoot(exp) => {
+        exp.eval match {
+          case Fail(reason)=>Fail(reason)
+          case Succeed(valOne) =>{
+            if(valOne < 0) Fail("Square root of negative number") else Succeed(math.sqrt(valOne))
+          }
+        }
+      }
+      case Number(value) => Succeed(value)
+    }
+  }
+}
+final case class Addition(left: Expression, right: Expression) extends Expression
+final case class Subtraction(left: Expression, right: Expression) extends Expression
+final case class Division(left: Expression, right: Expression) extends Expression
+final case class SquareRoot(value: Expression) extends Expression
+final case class Number(value: Double) extends Expression
+
+object TestMe17 extends Script {
+  val val1 = Number(2)
+  val val2 = Number(5)
+  val val3 = Number(4)
+  val val4 = Number(-1)
+
+  assert(val1.eval==Succeed(2))
+  assert(Addition(val1,val2).eval==Succeed(7))
+  assert(Subtraction(val1,val2).eval== Succeed(-3))
+  assert(Division(val3, val1).eval==Succeed(2))
+
+  assert(Addition(SquareRoot(Number(-1.0)), Number(2.0)).eval == Fail("Square root of negative number"))
+  assert(Addition(SquareRoot(Number(4.0)), Number(2.0)).eval == Succeed(4.0))
+  assert(Division(Number(4), Number(0)).eval == Fail("Division by zero"))
+
+}
+
+
+//
+//sealed trait Expression {
+//  def eval: Double = {
+//    this match {
+//      case Addition(left, right) => left.eval + right.eval
+//      case Subtraction(left, right) => left.eval - right.eval
+//      case Division(left, right) => left.eval / right.eval
+//      case SquareRoot(exp) => math.sqrt(exp.eval)
+//      case Number(value) => value
+//    }
+//  }
+//}
+//final case class Addition(left: Expression, right: Expression) extends Expression
+//final case class Subtraction(left: Expression, right: Expression) extends Expression
+//final case class Division(left: Expression, right: Expression) extends Expression
+//final case class SquareRoot(value: Expression) extends Expression
+//final case class Number(value: Double) extends Expression
+
+
+////////////////////////////////////////////////////////
+//4.7.0.4 - Extended exercises - JSON
+////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////
+//NOTE:
+//This was as far as I could get on this problem.
+//I wound up looking at the answer to see how it was implemented in the end.
+////////////////////////////////////////////////////////
+
+
+sealed trait JVal
+final case class JsString(value:String) extends JVal
+final case class JsNumber(value:Double) extends JVal
+final case class JsBoolean(value:Boolean) extends JVal
+
+sealed trait JList {
+
+  def print: String = {
+    val res = printInner
+    val resFinal = if(res.takeRight(1) == ",") res.take(res.length-1) else res
+    "[" + resFinal + "]"
+  }
+
+  def printInner: String = {
+    this match {
+      case SeqEnd => ""
+      case SeqCell(h,t) => {
+        h match {
+          case JsString(x) => "\"" + x + "\"" + "," + t.printInner
+          case JsNumber(x) => x.toString + "," + t.printInner
+          case JsBoolean(x) => x.toString + "," + t.printInner
+        }
+      }
+    }
+  }
+}
+final case class SeqCell(head: JVal, tail: JList) extends JList
+final case object SeqEnd extends JList
+
+
+object TestMe {
+  def main(args: Array[String]): Unit = {
+
+    val l = SeqEnd.print
+    val k = SeqCell(JsString("a string"), SeqCell(JsNumber(1.0), SeqCell(JsBoolean(true), SeqEnd))).print
+    // res: String = ["a string", 1.0, true]
+
+    println(l)
+    println(k)
+
+  }
+}
