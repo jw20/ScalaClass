@@ -1,0 +1,214 @@
+////////////////////////////////////////////////////////
+//5.1.3.1
+////////////////////////////////////////////////////////
+
+sealed trait Result[A]
+case class Success[A](result: A) extends Result[A]
+case class Failure[A](reason: String) extends Result[A]
+
+sealed trait LinkedList[A] {
+  def asString : String = {
+    this match {
+      case LinkEnd() => ""
+      case LinkPair(h, t) => {
+        println(h)
+        t.asString
+      }
+    }
+  }
+  def length : Int = {
+    this match {
+      case LinkEnd() => 0
+      case LinkPair(h, t) => 1 + t.length
+    }
+  }
+  def contains(target:A) : Boolean = {
+    this match {
+      case LinkEnd() => false
+      case LinkPair(h, t) => if(h==target) true else t.contains(target)
+    }
+  }
+  def apply(index: Int): Result[A] = {
+    this match {
+      case LinkEnd() => Failure("Index out of bounds")
+      case LinkPair(h, t) => if(index==0) Success(h) else t(index-1)
+    }
+  }
+}
+final case class LinkEnd[A]() extends LinkedList[A]
+final case class LinkPair[A](head: A, tail: LinkedList[A]) extends LinkedList[A]
+
+
+object TestMe13 extends Script {
+  val example = LinkPair(1, LinkPair(2, LinkPair(3, LinkEnd())))
+  example.asString
+}
+
+////////////////////////////////////////////////////////
+//5.1.3.2
+////////////////////////////////////////////////////////
+
+
+object TestMe14 {
+  def main(args: Array[String]): Unit = {
+    val example1 = LinkPair(1, LinkPair(2, LinkPair(3, LinkEnd())))
+    val example2 = LinkPair("a", LinkPair("b", LinkPair("c", LinkEnd())))
+
+    example1.asString
+    example2.asString
+
+    assert(example1.length == 3)
+    assert(example1.tail.length == 2)
+    assert(LinkEnd().length == 0)
+    assert(example2.length == 3)
+    assert(example2.tail.length == 2)
+
+    assert(example1.contains(3) == true)
+    assert(example1.contains(4) == false)
+    assert(LinkEnd().contains(0) == false)
+    assert(example2.contains("a")==true)
+    assert(example2.contains("d")==false)
+
+    assert(example1(0) == Success(1))
+    assert(example1(1) == Success(2))
+    assert(example1(2) == Success(3))
+//    assert(try {
+//      example1(3)
+//      false
+//    } catch {
+//      case e: Exception => true
+//    })
+
+    assert(example1(0) == Success(1))
+    assert(example1(1) == Success(2))
+    assert(example1(2) == Success(3))
+    assert(example1(3) == Failure("Index out of bounds"))
+
+  }
+}
+
+
+//////////////////////////////////////////////////////////
+////5.2.3.1
+//////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//I didn't come up with anything close to this on my own - eventually had to copy in the solution.
+//I can follow how this is working but would not be able to write this out from scratch.
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+sealed trait IntList {
+  //Orig implementation of length (w/o anon funcs) left for reference
+  def length: Int = {
+    this match {
+      case End => 0
+      case Pair(h, t) => 1 + t.length
+    }
+  }
+  //Orig implementation of product (w/o anon funcs) left for reference
+  def product: Int = {
+    this match {
+      case End => 1
+      case Pair(h, t) => h * t.product
+    }
+  }
+  //New implementation of length that uses anon funcs
+  def length2: Int =
+    fold(0, (_, t) => 1 + t)
+  //New implementation of product that uses anon funcs
+  def product2: Int =
+    fold(1, (hd, tl) => hd * tl)
+
+  def sum: Int =
+    fold(0, (hd, tl) => hd + tl)
+  //Generic function that takes various anon funcs to implement various behaviors.
+  def fold(end: Int, f: (Int,Int)=> Int ): Int = {
+    this match {
+      case End => end
+      case Pair(h, t) => f(h, t.fold(end, f))
+    }
+  }
+}
+final case class Pair(head: Int, tail: IntList) extends IntList
+final case object End extends IntList
+
+
+
+object TestMe15 {
+  def main(args: Array[String]): Unit = {
+
+
+    //Examples with function that takes two variables.
+    //The fee = amount + operatorFee + providerFee.
+    def moneyTransfer(amount: Double, operatorFee: Double, providerFee: (Double,Double) => Double): Double = {
+      amount + operatorFee + providerFee(amount, operatorFee)
+    }
+    //In this first case, the providerFee is a function that take 5%(amount) + operatorFee.
+    println(moneyTransfer(100, 10, (amt,opFee) => amt * 0.05 + opFee ))       //The output is 125.0
+    //In this second case, the providerFee is a function that take 5%(amount) + 10.
+    //Since this provider doesn't use operatorFee in its calc, we can use _ as a placeholder without naming it.
+    println(moneyTransfer(100, 10, (amt,_) => amt * 0.05 + 10 ))               //The output is 125.0
+    //But also
+    println(moneyTransfer(100, 10, _ * 0.05 + _ ))               //The output is 125.0
+  }
+}
+
+//////////////////////////////////////////////////////////
+////5.3.4.1
+//////////////////////////////////////////////////////////
+
+sealed trait Tree {
+  def sum: Int = {
+    this match {
+      case Leaf(value) => value
+      case Node(l,r) => l.sum + r.sum
+    }
+  }
+  def double: Tree = {
+    this match {
+      case Leaf(value) => Leaf(value * 2)
+      case Node(l,r) => Node(l.double, r.double)
+    }
+  }
+
+  //def sum: Int = fold(0, (hd, tl) => hd + tl)
+
+
+  def sumF: Int = fold((_, t) => t)
+
+  def fold(f: (Tree,Tree)=> Tree ): Int = {
+    this match {
+      case Leaf(v) => v
+      case Node(l, r) => l.fold(f) + r.fold(f)
+    }
+  }
+}
+final case class Node(left: Tree, right: Tree) extends Tree
+final case class Leaf(value: Int) extends Tree
+
+object TestMe16 {
+
+  def main(args: Array[String]): Unit = {
+    val leaf1 = Leaf(2)
+    val leaf2 = Leaf(4)
+    val leaf3 = Leaf(8)
+    val node2 = Node(leaf2, leaf3)
+    val node1 = Node(leaf1, node2)
+
+    val k = node1.sum
+    val l = node1.sumF
+
+    val list1 = List(1,2,3)
+    val list2 = List(4,5,6)
+    val list3 = 4 :: list1
+    //val list4 = list1 :: 4
+
+
+    println(k)
+    println(l)
+    val z = 0
+  }
+}
+
