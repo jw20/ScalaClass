@@ -1,0 +1,90 @@
+////////////////////////////////////////////////////////
+//5.1.3.1
+////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////
+//STATUS:  I would say I was able to do about 70% of this without help
+//  but had to take some peeks at the answer a couple of times.
+//  I was good in creating the LinkedList[A] and implementing length and contains.
+//  I was able to do the first version of apply once I saw the trick for counting down the index as you recurse.
+//  But it's when Result[A] was introduced that I started getting confused.  See question below.
+////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////
+//QUESTIONS -
+// 1.  Why can't I use a Case Object for Empty?
+// 2.  I don't fully understand this syntax: def returnMe[A](me: A): A = {....
+//     I get that me is of a generic type and that it returns the same generic type.
+//     But what is the purpose of the [A] to the right of returnMe?  Does that just identify it as a def that uses one generic type?
+// 3.  I find the fact that we have both Result[A] and LinkedList[A] to be confusing.
+//     Is there a connection between the A in Result and the A in LinkedList?
+// 4.  Looking ahead to the next exercise where we define def Fold[A],
+//     I'm also confused by the trait itself being generic vs the defs within the
+//     trait being generic and the interaction between the two.
+//     Actually, I see this is addressed more in 5.3.1 which makes more sense now - but I'll leave my orig question here.
+////////////////////////////////////////////////////////
+
+
+sealed trait Result[A]
+case class Success[A](result: A) extends Result[A]
+case class Failure[A](reason: String) extends Result[A]
+
+sealed trait LinkedList[A] {
+  def length: Int = {
+    this match {
+      case Empty() => 0
+      case Pair(h,t) => 1 + t.length
+    }
+  }
+  def contains(value: A): Boolean = {
+    this match {
+      case Empty() => false
+     case Pair(h,t) => if(h==value) true else t.contains(value)
+    }
+  }
+  def apply(index:Int):Result[A]={
+    this match {
+      case Empty() => Failure("Index out of bounds")
+      case Pair(h,t)=> if(index==0) Success(h) else t(index-1)
+    }
+  }
+
+}
+final case class Empty[A]() extends LinkedList[A]
+final case class Pair[A](head: A, tail: LinkedList[A]) extends LinkedList[A]
+
+////////////////////////////////////////////////////////
+//5.1.3.2
+////////////////////////////////////////////////////////
+
+object TestMe1  {
+  def main(args: Array[String]): Unit = {
+    val example = Pair(1, Pair(2, Pair(3, Empty())))
+    assert(example.length == 3)
+    assert(example.tail.length == 2)
+    assert(Empty().length == 0)
+
+    assert(example.contains(3) == true)
+   assert(example.contains(4) == false)
+    assert(Empty().contains(0) == false)
+    // This should not compile
+   //  example.contains("not an Int")
+
+//    assert(example(0) == 1)
+//    assert(example(1) == 2)
+//    assert(example(2) == 3)
+//    assert(try {
+//      example(3)
+//      false
+//    } catch {
+//      case e: Exception => true
+//    })
+
+    assert(example(0) == Success(1))
+    assert(example(1) == Success(2))
+    assert(example(2) == Success(3))
+    assert(example(3) == Failure("Index out of bounds"))
+
+  }
+}
