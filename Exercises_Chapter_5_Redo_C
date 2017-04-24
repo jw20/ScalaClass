@@ -1,0 +1,52 @@
+
+////////////////////////////////////////////////////////
+//STATUS:  So, here I get to the point where I can't even understand the problem when I look at the solution.
+//  You can see what I did below but it's not even close to what the solution looks like.
+////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////
+//5.3.4.1
+////////////////////////////////////////////////////////
+
+sealed trait Tree[A] {
+  //  def makeString(): String = {
+  //    this match {
+  //      case Leaf(value) => value.toString
+  //      case Node(left,right) => left.makeString() + ' ' + right.makeString()
+  //    }
+  //  }
+  def makeString(): String = {
+    fold(_ + " " + _)
+  }
+  def fold(func: (String, String) => String): String = {
+    this match {
+      case Leaf(v) => v.toString
+      case Node(left, right) => func(left.fold(func), right.fold(func))
+    }
+  }
+}
+final case class Node[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+final case class Leaf[A](value: A) extends Tree[A]
+
+object TestMe2 {
+  def main(args: Array[String]): Unit = {
+
+    val tree1: Tree[String] =
+      Node(Node(Leaf("To"), Leaf("iterate")),
+        Node(Node(Leaf("is"), Leaf("human,")),
+          Node(Leaf("to"), Node(Leaf("recurse"), Leaf("divine")))))
+
+    val tree2 =
+      Node(Node(Leaf(1), Leaf(2)),
+        Node(Node(Leaf(3), Leaf(4)),
+          Node(Leaf(5), Node(Leaf(6), Leaf(7)))))
+
+    println(tree1.makeString())
+    println(tree2.makeString())
+
+
+  }
+}
+ 
+ 
